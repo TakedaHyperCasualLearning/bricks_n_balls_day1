@@ -6,23 +6,51 @@ public class Launcher : MonoBehaviour
 {
     [SerializeField] private GameObject predictionMarkerPrefab;
     [SerializeField] private GameObject dotPointPrefab;
+    [SerializeField] private BallPool ballPool;
 
+    private Vector3 mouseToMakerDirection = Vector3.zero;
     private float DOTTEDLINE_DISTANCE = 0.2f;
     private GameObject predictionMarker;
     private List<GameObject> dotPoints = new List<GameObject>();
-
     private float BOUND_LENGTH = 3.0f;
+    private bool isShot = false;
+    private float shotInterval = 0.0f;
+    private float SHOT_INTERVAL_MAX = 0.05f;
+    private int shotCount = 0;
 
     void Start()
     {
         predictionMarker = Instantiate(predictionMarkerPrefab, transform.position, Quaternion.identity);
         predictionMarker.transform.parent = transform;
         predictionMarker.SetActive(false);
+
+        ballPool.GenerateBall();
     }
 
     // Update is called once per frame
     void Update()
     {
+
+        if (isShot)
+        {
+            shotInterval += Time.deltaTime;
+            if (shotInterval > SHOT_INTERVAL_MAX)
+            {
+                ballPool.GetBall().SetVelocity(mouseToMakerDirection);
+                shotCount++;
+                Debug.Log(ballPool.GetBallList().Count);
+                shotInterval = 0.0f;
+
+                if (shotCount >= ballPool.GetBallList().Count)
+                {
+                    isShot = false;
+                    shotCount = 0;
+                }
+            }
+            return;
+        }
+
+
         if (Input.GetMouseButton(0))
         {
             // マウスポジションの取得と、座標の変換
@@ -31,17 +59,24 @@ public class Launcher : MonoBehaviour
             mousePosition.y = (float)(mousePosition.y - Screen.height * 0.5);
 
             // マウスとの方向ベクトルの取得
-            Vector3 direction = transform.position - mousePosition;
-            direction.Normalize();
+            mouseToMakerDirection = transform.position - mousePosition;
+            mouseToMakerDirection.Normalize();
 
             // レイキャストの実行
-            RaycastHit2D raycast = Physics2D.Raycast(transform.position, direction);
-            Debug.DrawRay(transform.position, direction, Color.red, 1, false);
+            RaycastHit2D raycast = Physics2D.Raycast(transform.position, mouseToMakerDirection);
+            Debug.DrawRay(transform.position, mouseToMakerDirection, Color.red, 1, false);
 
             if (raycast.collider == null || raycast.collider.tag != "Wall") return;
 
-            DrawDottedLine(raycast, direction);
+            DrawDottedLine(raycast, mouseToMakerDirection);
 
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            Shot(mouseToMakerDirection);
+            dotPoints.ForEach(dotPoint => dotPoint.SetActive(false));
+            predictionMarkerPrefab.SetActive(false);
+            predictionMarker.SetActive(false);
         }
         else
         {
@@ -61,7 +96,6 @@ public class Launcher : MonoBehaviour
         // 点線を表示するための処理
         float lineLength = Vector3.Distance(transform.position, raycast.point);
         int dottedLineCount = (int)(lineLength / DOTTEDLINE_DISTANCE);
-        Debug.Log(dottedLineCount);
 
         for (int i = 0; i < dottedLineCount; i++)
         {
@@ -114,5 +148,11 @@ public class Launcher : MonoBehaviour
                 dotPoints[i].SetActive(false);
             }
         }
+    }
+
+
+    private void Shot(Vector3 direction)
+    {
+        isShot = true;
     }
 }
