@@ -6,15 +6,13 @@ using UnityEngine.UI;
 
 public class Block : MonoBehaviour
 {
-    [SerializeField] private TextMeshProUGUI durabilityTextMeshPrefab;
-    [SerializeField] private Canvas canvas;
     private int durability = 5;
     private TextMeshProUGUI durabilityText;
 
 
-    void Start()
+    public void Initialize(TextMeshProUGUI text, Canvas canvas)
     {
-        durabilityText = Instantiate(durabilityTextMeshPrefab, transform.position, Quaternion.identity, transform);
+        durabilityText = Instantiate(text, transform.position, Quaternion.identity, transform);
         durabilityText.transform.SetParent(canvas.transform);
         durabilityText.transform.localScale = new Vector3(1, 1, 1);
         durabilityText.text = durability.ToString();
@@ -30,7 +28,6 @@ public class Block : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Ball"))
         {
-
             durability--;
             if (durability <= 0)
             {
@@ -39,5 +36,10 @@ public class Block : MonoBehaviour
             }
             durabilityText.text = durability.ToString();
         }
+    }
+
+    public void SetDurability(int newDurability)
+    {
+        durability = newDurability;
     }
 }
