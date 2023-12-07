@@ -24,8 +24,10 @@ public class Ball : MonoBehaviour
         velocity = newVelocity;
     }
 
+
     private void OnCollisionEnter2D(Collision2D other)
     {
+        // Debug.Log(other.gameObject.tag);
         if (other.gameObject.CompareTag("Wall") || other.gameObject.CompareTag("Block"))
         {
             velocity = Vector3.Reflect(velocity, other.contacts[0].normal).normalized;
