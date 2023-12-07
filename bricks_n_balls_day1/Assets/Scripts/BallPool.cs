@@ -8,16 +8,17 @@ public class BallPool : MonoBehaviour
 
     private List<Ball> ballPool = new List<Ball>();
 
-    private int BALL_POOL_SIZE = 100;
+    private int BALL_POOL_SIZE = 50;
+
+    private bool isFirstStop = false;
+    private Vector3 firstStopPosition = Vector3.zero;
 
     public void GenerateBall()
     {
         for (int i = 0; i < BALL_POOL_SIZE; i++)
         {
             GameObject ball = Instantiate(ballPrefab, transform.position, Quaternion.identity);
-            ball.SetActive(false);
             ballPool.Add(ball.GetComponent<Ball>());
-            Debug.Log(ball.gameObject.activeSelf);
         }
     }
 
@@ -27,7 +28,7 @@ public class BallPool : MonoBehaviour
         {
             if (!ball.gameObject.activeSelf)
             {
-                ball.gameObject.SetActive(true);
+                // ball.gameObject.SetActive(true);
                 return ball;
             }
         }
@@ -42,5 +43,24 @@ public class BallPool : MonoBehaviour
     public List<Ball> GetBallList()
     {
         return ballPool;
+    }
+
+    public bool CheckIsStop()
+    {
+        bool isStop = true;
+
+        for (int i = 0; i < ballPool.Count; i++)
+        {
+            if (ballPool[i].GetIsMove()) { isStop = false; continue; }
+
+            if (!isFirstStop)
+            {
+                isFirstStop = true;
+                firstStopPosition = ballPool[i].transform.position;
+                Debug.Log("firstStopPosition: " + firstStopPosition);
+            }
+        }
+
+        return isStop;
     }
 }

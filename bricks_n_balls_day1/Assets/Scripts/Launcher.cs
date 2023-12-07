@@ -24,32 +24,38 @@ public class Launcher : MonoBehaviour
         predictionMarker.transform.parent = transform;
         predictionMarker.SetActive(false);
 
+        ballPool.transform.position = transform.position;
         ballPool.GenerateBall();
     }
 
     // Update is called once per frame
     void Update()
     {
-
         if (isShot)
         {
             shotInterval += Time.deltaTime;
             if (shotInterval > SHOT_INTERVAL_MAX)
             {
-                ballPool.GetBall().SetVelocity(mouseToMakerDirection);
-                shotCount++;
-                Debug.Log(ballPool.GetBallList().Count);
-                shotInterval = 0.0f;
+                if (ballPool.GetBallList().Count > shotCount)
+                {
+                    var ball = ballPool.GetBallList()[shotCount];
+                    ball.SetVelocity(mouseToMakerDirection);
+                    shotCount++;
+                    shotInterval = 0.0f;
+                }
+            }
 
-                if (shotCount >= ballPool.GetBallList().Count)
+            if (shotCount >= ballPool.GetBallList().Count)
+            {
+                if (ballPool.CheckIsStop())
                 {
                     isShot = false;
                     shotCount = 0;
+                    shotInterval = 0.0f;
                 }
             }
             return;
         }
-
 
         if (Input.GetMouseButton(0))
         {
@@ -154,5 +160,6 @@ public class Launcher : MonoBehaviour
     private void Shot(Vector3 direction)
     {
         isShot = true;
+        ballPool.GetBallList().ForEach(ball => ball.SetIsMove(true));
     }
 }
